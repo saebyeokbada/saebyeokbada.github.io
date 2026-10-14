@@ -388,7 +388,7 @@ input[type=text], input[type=number], select {
             <input id="pName" type="text" placeholder="프리셋 이름 (예: 새벽 2단)" aria-label="프리셋 이름" maxlength="30">
             <button class="btn primary" id="pSave" type="button">저장</button>
           </div>
-          <p class="hint">글꼴·크기·간격·정렬·색·형광펜·따옴표·용지·배경·제작자·워터마크를 저장해요. 본문과 작품명·캐릭터·화수, 배경 사진은 저장하지 않아요. 프리셋은 이 기기의 이 브라우저에 남아 있어요.</p>
+          <p class="hint">글꼴·크기·간격·정렬·색·형광펜·따옴표, 용지 비율·폭·높이·여백·단 구성, 배경(사진과 확대·위치 포함), 작품명 크기·정보 크기, 제작자·워터마크를 저장해요. 본문과 작품명·캐릭터·화수는 매번 달라서 빼요. 프리셋은 이 기기의 이 브라우저에 남아 있어요.</p>
           <p class="status" id="pStatus" role="status"></p>
         </div>
         <div class="divider"></div>
@@ -1114,6 +1114,39 @@ try {
   if (url) { const im = new Image(); im.onload = () => { bgImg = im; update(); }; im.src = url; }
 } catch (e) {}
 
+/* ---------------- photo store for presets (IndexedDB holds large images) ---------------- */
+const IDB = (() => {
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open("excerpt-db", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("img");
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const tx = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const t = db.transaction("img", mode); const q = fn(t.objectStore("img"));
+    t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+  }));
+  return { put: (k, v) => tx("readwrite", st => st.put(v, k)), get: k => tx("readonly", st => st.get(k)), del: k => tx("readwrite", st => st.delete(k)) };
+})();
+function imageBlob(img) {
+  return new Promise((res, rej) => {
+    const max = 2000, k = Math.min(1, max / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    c.toBlob(b => b ? res(b) : rej(new Error("blob")), "image/jpeg", 0.9);
+  });
+}
+function blobToImage(blob) {
+  return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(blob); });
+}
+const thumbCache = new Map();
+async function thumbUrl(p) {
+  const key = p.id + ":" + p.at;
+  if (thumbCache.has(key)) return thumbCache.get(key);
+  const blob = await IDB.get(p.id); if (!blob) return null;
+  const url = URL.createObjectURL(blob); thumbCache.set(key, url); return url;
+}
+
 /* ---------------- presets ---------------- */
 const P_KEY = "excerpt-presets";
 const P_SKIP = new Set(["text", "styles", "work", "chr", "ep"]);
@@ -1133,7 +1166,17 @@ function syncUI() {
   [...$("fontGrid").children].forEach((b, i) => b.setAttribute("aria-pressed", String(FONTS[i].id === S.font)));
   rebuildColors(); buildBgColors(); syncColUI(); renderToolbar(); renderMirror();
 }
-function applyPreset(p) {
+async function fillPreset(p) {
+  // copy current design (and photo, if one is in use) into preset p
+  p.data = snapshot(); p.at = Date.now();
+  if (S.bgMode === "image" && bgImg) {
+    try { await IDB.put(p.id, await imageBlob(bgImg)); p.img = true; return true; }
+    catch (e) { p.img = false; return false; }
+  }
+  if (p.img) IDB.del(p.id).catch(() => {});
+  p.img = false; return true;
+}
+async function applyPreset(p) {
   const d = p.data || {};
   Object.keys(DEFAULTS).forEach(k => {
     if (P_SKIP.has(k) || d[k] === undefined) return;
@@ -1141,7 +1184,15 @@ function applyPreset(p) {
     else S[k] = clone(d[k]);
   });
   syncUI(); update();
-  pMsg(`‘${p.name}’ 프리셋을 적용했어요.`);
+  let note = "";
+  if (p.img) {
+    try {
+      const blob = await IDB.get(p.id);
+      if (blob) { bgImg = await blobToImage(blob); rememberImage(bgImg); update(); }
+      else note = " 저장된 사진을 찾지 못해서 지금 사진을 그대로 뒀어요.";
+    } catch (e) { note = " 사진은 불러오지 못했어요."; }
+  }
+  pMsg(`‘${p.name}’ 프리셋을 적용했어요.` + note, !!note);
 }
 function bgCss(d) {
   if (d.bgMode === "grad" || d.bgMode === "grad3") return `linear-gradient(135deg, ${d.bg1}, ${d.bg2}${d.bgMode === "grad3" ? ", " + d.bg3 : ""})`;
@@ -1163,33 +1214,39 @@ function renderPresets() {
     const item = document.createElement("div"); item.className = "pitem";
     const th = document.createElement("div"); th.className = "pthumb"; th.style.background = bgCss(d);
     th.style.color = d.bgMode === "image" ? "#fff" : d.fg; th.style.fontFamily = f.css + ", serif"; th.textContent = "가";
+    if (p.img) thumbUrl(p).then(u => { if (u) { th.style.background = `#3a3a3a url("${u}") center / cover`; th.style.textShadow = "0 1px 3px rgba(0,0,0,.6)"; } }).catch(() => {});
     const info = document.createElement("div"); info.className = "pinfo";
     const nm = document.createElement("b"); nm.textContent = p.name;
-    const sub = document.createElement("span"); sub.textContent = `${f.name} · ${d.size}px · ${r.name || r.id} · ${d.cols === 2 ? "2단" : "1단"}`;
+    const W = d.paperW || 1080, sizeTxt = r.id === "custom" ? `${W}×${d.paperH}` : r.id === "auto" ? `폭 ${W}·자동` : `${r.id} · 폭 ${W}`;
+    const sub = document.createElement("span"); sub.textContent = `${f.name} · ${d.size}px · ${sizeTxt} · ${d.cols === 2 ? "2단" : "1단"}${p.img ? " · 사진" : ""}`;
     info.append(nm, sub);
     const bt = document.createElement("div"); bt.className = "pbtns";
     const mkb = (txt, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn sm " + cls; b.textContent = txt; b.onclick = () => fn(b); return b; };
     bt.append(
       mkb("적용", "soft", () => applyPreset(p)),
       mkb("덮어쓰기", "", b => {
-        if (b.dataset.arm) { p.data = snapshot(); p.at = Date.now(); savePresets(); renderPresets(); pMsg(`‘${p.name}’에 지금 디자인을 덮어썼어요.`); return; }
+        if (b.dataset.arm) { fillPreset(p).then(ok => { savePresets(); renderPresets(); pMsg(ok ? `‘${p.name}’에 지금 디자인을 덮어썼어요.` : `‘${p.name}’을 덮어썼지만 사진은 저장하지 못했어요.`, !ok); }); return; }
         b.dataset.arm = "1"; b.textContent = "한 번 더 누르면 덮어써요"; setTimeout(() => { if (b.isConnected) { delete b.dataset.arm; b.textContent = "덮어쓰기"; } }, 3000);
       }),
       mkb("삭제", "danger", b => {
-        if (b.dataset.arm) { PRESETS_SAVED.splice(idx, 1); savePresets(); renderPresets(); pMsg(`‘${p.name}’을 삭제했어요.`); return; }
+        if (b.dataset.arm) { PRESETS_SAVED.splice(idx, 1); if (p.img) IDB.del(p.id).catch(() => {}); savePresets(); renderPresets(); pMsg(`‘${p.name}’을 삭제했어요.`); return; }
         b.dataset.arm = "1"; b.textContent = "정말 삭제"; setTimeout(() => { if (b.isConnected) { delete b.dataset.arm; b.textContent = "삭제"; } }, 3000);
       })
     );
     item.append(th, info, bt); list.appendChild(item);
   });
 }
-$("pSave").onclick = () => {
+$("pSave").onclick = async () => {
+  const btn = $("pSave"); if (btn.disabled) return; btn.disabled = true;
   const name = $("pName").value.trim() || `프리셋 ${PRESETS_SAVED.length + 1}`;
   const same = PRESETS_SAVED.find(p => p.name === name);
-  if (same) { same.data = snapshot(); same.at = Date.now(); }
-  else PRESETS_SAVED.unshift({ id: Date.now().toString(36), name, at: Date.now(), data: snapshot() });
-  const ok = savePresets(); renderPresets(); $("pName").value = "";
-  pMsg(ok ? (same ? `같은 이름이 있어서 ‘${name}’을 새 디자인으로 바꿨어요.` : `‘${name}’을 저장했어요.`) : "이 브라우저에서는 저장이 막혀 있어요. 시크릿 창이 아닌 일반 창에서 열어 주세요.", !ok);
+  const p = same || { id: Date.now().toString(36), name };
+  const imgOk = await fillPreset(p);
+  if (!same) PRESETS_SAVED.unshift(p);
+  const ok = savePresets(); renderPresets(); $("pName").value = ""; btn.disabled = false;
+  if (!ok) { pMsg("이 브라우저에서는 저장이 막혀 있어요. 시크릿 창이 아닌 일반 창에서 열어 주세요.", true); return; }
+  const base = same ? `같은 이름이 있어서 ‘${name}’을 새 디자인으로 바꿨어요.` : `‘${name}’을 저장했어요.`;
+  pMsg(imgOk ? base + (p.img ? " 배경 사진도 함께 저장했어요." : "") : base + " 다만 배경 사진은 저장하지 못했어요.", !imgOk);
 };
 $("pName").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("pSave").click(); } });
 buildAll();
