@@ -302,7 +302,7 @@ input[type=text], input[type=number], select {
             <div class="slider"><span class="lbl">좌우 이동</span><input id="imgX" type="range" min="-100" max="100" step="1"><output></output></div>
             <div class="slider"><span class="lbl">상하 이동</span><input id="imgY" type="range" min="-100" max="100" step="1"><output></output></div>
             <div class="bar"><button class="btn sm" id="imgReset" type="button">크기·위치 처음으로</button></div>
-            <p class="hint">미리보기 위에서 사진을 손가락이나 마우스로 끌어도 옮겨져요. 넣은 사진은 이 브라우저에 기억돼요.</p>
+            <p class="hint">사진 위치는 위의 확대·이동으로만 바뀌어요. 넣은 사진은 이 브라우저에 기억돼요.</p>
             <div class="slider"><span class="lbl">블러</span><input id="blur" type="range" min="0" max="30" step="1"><output></output></div>
             <div class="field"><span class="lbl">덮개</span><div class="seg" id="ovSeg"></div></div>
             <div class="slider"><span class="lbl">덮개 농도</span><input id="ovAmt" type="range" min="0" max="0.9" step="0.05"><output></output></div>
@@ -698,7 +698,13 @@ ta().addEventListener("input", () => {
 });
 function grow() { const t = ta(); t.style.height = "auto"; t.style.height = Math.max(200, t.scrollHeight) + "px"; }
 ta().addEventListener("input", grow);
-new ResizeObserver(grow).observe(ta().parentElement);
+// re-fit the editor only when its width changes, one frame later (avoids a resize feedback loop)
+let edW = 0;
+new ResizeObserver(entries => {
+  const w = Math.round(entries[0].contentRect.width);
+  if (w === edW) return; edW = w;
+  requestAnimationFrame(grow);
+}).observe(ta().parentElement);
 
 /* resolve final color per char (shared by editor and canvas) */
 function displayText() {
@@ -960,7 +966,6 @@ function drawLine(line, x0, y, colW, lineH, sz) {
 
 let lastOverflow = false;
 function draw() {
-  syncCanvasCursor();
   const W = S.paperW, H = heightFor(S.ratio, W);
   if (cv.width !== W) cv.width = W;
   if (cv.height !== H) cv.height = H;
@@ -1092,7 +1097,7 @@ $("save").onclick = async () => {
   }
 };
 
-/* ---------------- background photo: remember + drag ---------------- */
+/* ---------------- background photo: remember ---------------- */
 function syncSliders() { SLIDERS.forEach(x => { x.inp.value = S[x.key]; x.out.textContent = x.fmt(S[x.key]); }); }
 function rememberImage(img) {
   // keep a downscaled copy so the photo survives a reload
@@ -1109,24 +1114,6 @@ try {
   const url = localStorage.getItem("excerpt-bg");
   if (url) { const im = new Image(); im.onload = () => { bgImg = im; update(); }; im.src = url; }
 } catch (e) {}
-(() => {
-  let drag = null;
-  cv.addEventListener("pointerdown", e => {
-    if (S.bgMode !== "image" || !bgImg) return;
-    e.preventDefault(); cv.setPointerCapture(e.pointerId);
-    drag = { x: e.clientX, y: e.clientY, ix: S.imgX, iy: S.imgY, w: cv.getBoundingClientRect().width, h: cv.getBoundingClientRect().height };
-  });
-  cv.addEventListener("pointermove", e => {
-    if (!drag) return;
-    const clamp = v => Math.max(-100, Math.min(100, Math.round(v)));
-    S.imgX = clamp(drag.ix + (e.clientX - drag.x) / (drag.w / 2) * 100);
-    S.imgY = clamp(drag.iy + (e.clientY - drag.y) / (drag.h / 2) * 100);
-    syncSliders(); update();
-  });
-  const end = () => { drag = null; };
-  cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
-})();
-function syncCanvasCursor() { const on = S.bgMode === "image" && bgImg; cv.style.cursor = on ? "grab" : ""; cv.style.touchAction = on ? "none" : ""; }
 
 /* ---------------- presets ---------------- */
 const P_KEY = "excerpt-presets";
