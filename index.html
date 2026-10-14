@@ -388,7 +388,7 @@ input[type=text], input[type=number], select {
             <input id="pName" type="text" placeholder="프리셋 이름 (예: 새벽 2단)" aria-label="프리셋 이름" maxlength="30">
             <button class="btn primary" id="pSave" type="button">저장</button>
           </div>
-          <p class="hint">글꼴·크기·간격·정렬·색·형광펜·따옴표, 용지 비율·폭·높이·여백·단 구성, 배경(사진과 확대·위치 포함), 작품명 크기·정보 크기, 제작자·워터마크를 저장해요. 본문과 작품명·캐릭터·화수는 매번 달라서 빼요. 프리셋은 이 기기의 이 브라우저에 남아 있어요.</p>
+          <p class="hint">지금 화면 그대로 저장해요. 본문과 글자색·형광펜·굵게·기울임·밑줄, 작품 정보, 글꼴·간격, 색, 용지 크기, 배경 사진까지 모두 들어가요. 프리셋은 이 기기의 이 브라우저에 남아 있어요.</p>
           <p class="status" id="pStatus" role="status"></p>
         </div>
         <div class="divider"></div>
@@ -1149,7 +1149,7 @@ async function thumbUrl(p) {
 
 /* ---------------- presets ---------------- */
 const P_KEY = "excerpt-presets";
-const P_SKIP = new Set(["text", "styles", "work", "chr", "ep"]);
+const P_SKIP = new Set(); // presets keep everything, including the passage and its formatting
 const clone = v => JSON.parse(JSON.stringify(v));
 function loadPresets() { try { const a = JSON.parse(localStorage.getItem(P_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 let PRESETS_SAVED = loadPresets();
@@ -1162,6 +1162,8 @@ function syncUI() {
   ["work", "chr", "maker", "ep", "nick"].forEach(k => { $(k).value = S[k] || ""; });
   ["showMeta", "smartq", "indent", "colRule", "qOn"].forEach(k => { $(k).checked = !!S[k]; });
   $("paperW").value = S.paperW; $("paperH").value = S.paperH;
+  if (!Array.isArray(S.styles) || S.styles.length !== S.text.length) S.styles = Array.from({ length: S.text.length }, () => null);
+  ta().value = S.text; prevText = S.text; grow();
   document.querySelectorAll(".seg").forEach(el => { if (el._seg) seg(el, ...el._seg); });
   [...$("fontGrid").children].forEach((b, i) => b.setAttribute("aria-pressed", String(FONTS[i].id === S.font)));
   rebuildColors(); buildBgColors(); syncColUI(); renderToolbar(); renderMirror();
@@ -1220,6 +1222,10 @@ function renderPresets() {
     const W = d.paperW || 1080, sizeTxt = r.id === "custom" ? `${W}×${d.paperH}` : r.id === "auto" ? `폭 ${W}·자동` : `${r.id} · 폭 ${W}`;
     const sub = document.createElement("span"); sub.textContent = `${f.name} · ${d.size}px · ${sizeTxt} · ${d.cols === 2 ? "2단" : "1단"}${p.img ? " · 사진" : ""}`;
     info.append(nm, sub);
+    if (typeof d.text === "string" && d.text.trim()) {
+      const ex = document.createElement("span"); const first = d.text.trim().split("\n")[0];
+      ex.textContent = "“" + (first.length > 28 ? first.slice(0, 28) + "…" : first) + "”"; info.appendChild(ex);
+    }
     const bt = document.createElement("div"); bt.className = "pbtns";
     const mkb = (txt, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn sm " + cls; b.textContent = txt; b.onclick = () => fn(b); return b; };
     bt.append(
@@ -1246,7 +1252,7 @@ $("pSave").onclick = async () => {
   const ok = savePresets(); renderPresets(); $("pName").value = ""; btn.disabled = false;
   if (!ok) { pMsg("이 브라우저에서는 저장이 막혀 있어요. 시크릿 창이 아닌 일반 창에서 열어 주세요.", true); return; }
   const base = same ? `같은 이름이 있어서 ‘${name}’을 새 디자인으로 바꿨어요.` : `‘${name}’을 저장했어요.`;
-  pMsg(imgOk ? base + (p.img ? " 배경 사진도 함께 저장했어요." : "") : base + " 다만 배경 사진은 저장하지 못했어요.", !imgOk);
+  pMsg(imgOk ? base + (p.img ? " 본문·서식·배경 사진까지 함께 저장했어요." : " 본문과 서식까지 함께 저장했어요.") : base + " 다만 배경 사진은 저장하지 못했어요.", !imgOk);
 };
 $("pName").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("pSave").click(); } });
 buildAll();
