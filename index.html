@@ -181,6 +181,10 @@ input[type=text], input[type=number], select {
 .pbtns { display: flex; gap: 6px; flex-wrap: wrap; }
 .btn.danger { color: var(--warn); }
 .empty { padding: 18px; border: 1px dashed var(--line); border-radius: 10px; text-align: center; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.divbtn { width: 44px; padding: 0 4px; display: grid; place-items: center; }
+.divbtn svg { width: 34px; height: 12px; display: block; }
+.divmark { display: inline-block; width: calc(100% - 2px); height: 1.65em; vertical-align: top; }
+.divmark svg { width: 100%; height: 100%; display: block; }
 .swgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .preset { border: 1px solid var(--line); border-radius: 9px; padding: 0; overflow: hidden; cursor: pointer; background: var(--panel); text-align: left; }
 .preset .pv { height: 42px; display: grid; place-items: center; font-size: 15px; font-weight: 600; }
@@ -230,6 +234,7 @@ input[type=text], input[type=number], select {
           <div class="toolbar" id="toolbar">
             <div class="trow"><span class="tl">글자색</span><div class="trow" id="tbColors"></div></div>
             <div class="trow"><span class="tl">형광펜</span><div class="trow" id="tbHl"></div></div>
+            <div class="trow"><span class="tl">구분선</span><div class="trow" id="tbDiv"></div></div>
             <div class="trow"><span class="tl">서식</span>
               <button class="tbtn b" id="tbBold" type="button" title="굵게" aria-label="굵게">B</button>
               <button class="tbtn b" id="tbItalic" type="button" title="기울임" aria-label="기울임" style="font-style:italic;font-weight:600;font-family:Georgia,serif">I</button>
@@ -243,7 +248,7 @@ input[type=text], input[type=number], select {
               <textarea id="text" spellcheck="false" placeholder="좋아하는 문장을 붙여 넣으세요"></textarea>
             </div>
           </div>
-          <p class="hint">글자를 드래그해서 선택한 뒤 색·형광펜·굵게·기울임·밑줄을 누르세요. 선택 없이 누르면 커서가 있는 줄 전체에 적용돼요. 색은 ‘색상’ 탭에서 바꿀 수 있어요.</p>
+          <p class="hint">글자를 드래그해서 선택한 뒤 색·형광펜·굵게·기울임·밑줄을 누르세요. 선택 없이 누르면 커서가 있는 줄 전체에 적용돼요. 구분선은 커서 자리에 한 줄로 들어가고, 지울 때는 그 줄에서 지우기(백스페이스)를 누르면 돼요. 구분선 줄에 글자색을 칠하면 그 선만 색이 바뀌어요.</p>
         </div>
         <div class="divider"></div>
         <div class="sec">
@@ -370,6 +375,13 @@ input[type=text], input[type=number], select {
         </div>
         <div class="divider"></div>
         <div class="sec">
+          <div class="sec-h"><h3>구분선</h3></div>
+          <div class="colors" id="divColors"></div>
+          <div class="slider"><span class="lbl">굵기</span><input id="divW" type="range" min="50" max="300" step="5"><output></output></div>
+          <div class="slider"><span class="lbl">위아래 여백</span><input id="divGap" type="range" min="0" max="200" step="2"><output></output></div>
+        </div>
+        <div class="divider"></div>
+        <div class="sec">
           <div class="sec-h"><h3>따옴표 색</h3>
             <label class="toggle" style="gap:6px;font-size:12.5px">사용 <input id="qOn" type="checkbox"></label>
           </div>
@@ -446,7 +458,7 @@ const DEFAULTS = {
   fg: "#1f1f1f", sub: "#8a8a8a",
   slots: { c1: "#d92f4b", c2: "#2f5fd9", c3: "#1f9d6b", c4: "#8a5ad9" },
   hl: { A: "#fff176", B: "#ffc4d6", C: "#b8e6ff" }, hlStyle: "under", hlAlpha: 0.75,
-  qOn: true, q: { A: "#2f5fd9", B: "#8a5ad9", C: "#c47a1a" }, qScope: "all"
+  qOn: true, q: { A: "#2f5fd9", B: "#8a5ad9", C: "#c47a1a" }, qScope: "all", divColor: "#b5b5b5", divW: 100, divGap: 24
 };
 
 let S = JSON.parse(JSON.stringify(DEFAULTS));
@@ -596,12 +608,14 @@ function buildAll() {
     v.style.color = p.fg; v.textContent = "가";
     const n = document.createElement("span"); n.className = "pn"; n.textContent = p.name;
     b.append(v, n);
-    b.onclick = () => { S.bgMode = p.mode; S.bg1 = p.bg[0]; S.bg2 = p.bg[1]; S.bg3 = p.bg[1]; S.fg = p.fg; S.sub = p.sub; rebuildColors(); seg($("bgSeg"), [{ id: "solid", name: "단색" }, { id: "grad", name: "2색" }, { id: "grad3", name: "3색" }, { id: "image", name: "사진" }], "bgMode", buildBgColors); buildBgColors(); update(); };
+    b.onclick = () => { S.bgMode = p.mode; S.bg1 = p.bg[0]; S.bg2 = p.bg[1]; S.bg3 = p.bg[1]; S.fg = p.fg; S.sub = p.sub; S.divColor = p.sub; rebuildColors(); seg($("bgSeg"), [{ id: "solid", name: "단색" }, { id: "grad", name: "2색" }, { id: "grad3", name: "3색" }, { id: "image", name: "사진" }], "bgMode", buildBgColors); buildBgColors(); update(); };
     pr.appendChild(b);
   });
   rebuildColors();
   seg($("hlStyleSeg"), [{ id: "under", name: "형광펜 (아래쪽)" }, { id: "full", name: "전체 칠" }, { id: "line", name: "밑줄" }], "hlStyle");
   slider("hlAlpha", "hlAlpha", v => Math.round(v * 100) + "%");
+  slider("divW", "divW", v => v + "%");
+  slider("divGap", "divGap", v => v + "px");
   seg($("qScopeSeg"), [{ id: "all", name: "대사 전체" }, { id: "mark", name: "따옴표 기호만" }], "qScope");
 
   // editor
@@ -621,6 +635,8 @@ function rebuildColors() {
   colorRow(q, "따옴표 A", () => S.q.A, v => S.q.A = v, "“ ”  대사");
   colorRow(q, "따옴표 B", () => S.q.B, v => S.q.B = v, "‘ ’  속마음");
   colorRow(q, "따옴표 C", () => S.q.C, v => S.q.C = v, "「 」 『 』");
+  const dv = $("divColors"); dv.innerHTML = "";
+  colorRow(dv, "구분선 기본색", () => S.divColor, v => S.divColor = v);
   renderMirror();
 }
 function buildBgColors() {
@@ -639,6 +655,13 @@ function syncColUI() { $("gapRow").hidden = S.cols !== 2; $("ruleRow").hidden = 
 const ta = () => $("text");
 function keepSel(e) { e.preventDefault(); }
 function renderToolbar() {
+  const dvb = $("tbDiv"); dvb.innerHTML = "";
+  DIVS.forEach(d => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "tbtn divbtn"; b.title = d.name + " 넣기"; b.setAttribute("aria-label", d.name + " 넣기");
+    b.innerHTML = divSvg(d.id, false);
+    b.addEventListener("pointerdown", keepSel); b.onclick = () => insertDivider(d.id);
+    dvb.appendChild(b);
+  });
   const c = $("tbColors"); c.innerHTML = "";
   ["c1", "c2", "c3", "c4"].forEach((k, i) => {
     const b = document.createElement("button"); b.type = "button"; b.className = "dot"; b.style.background = S.slots[k]; b.title = "글자색 " + (i + 1); b.setAttribute("aria-label", "글자색 " + (i + 1));
@@ -763,9 +786,16 @@ function renderMirror() {
   let i = 0;
   const frag = document.createDocumentFragment();
   while (i < t.length) {
+    if (DIVMAP[t[i]]) {
+      const dm = document.createElement("span"); dm.className = "divmark";
+      dm.style.color = (S.styles[i] && S.styles[i].c) ? S.slots[S.styles[i].c] : S.divColor;
+      dm.innerHTML = divSvg(DIVMAP[t[i]], true);
+      frag.appendChild(dm); i++; continue;
+    }
     const st = S.styles[i] || {}, col = charColor(i, qc);
     let j = i + 1;
     while (j < t.length) {
+      if (DIVMAP[t[j]]) break;
       const s2 = S.styles[j] || {};
       if (s2.h !== st.h || !!s2.b !== !!st.b || !!s2.i !== !!st.i || !!s2.u !== !!st.u || charColor(j, qc) !== col) break;
       j++;
@@ -789,6 +819,68 @@ function renderMirror() {
 }
 
 /* ---------------- layout engine ---------------- */
+/* ---------------- dividers ---------------- */
+const DIVS = [
+  { id: "short", ch: "\uE101", name: "짧은 선" },
+  { id: "long", ch: "\uE102", name: "긴 선" },
+  { id: "dashed", ch: "\uE103", name: "점선" },
+  { id: "double", ch: "\uE104", name: "이중선" },
+  { id: "dots", ch: "\uE105", name: "점 세 개" },
+  { id: "diamond", ch: "\uE106", name: "마름모" },
+  { id: "wave", ch: "\uE107", name: "물결" }
+];
+const DIVMAP = Object.fromEntries(DIVS.map(d => [d.ch, d.id]));
+function divSvg(id, stretch) {
+  const wide = ["long", "dashed", "double"].includes(id);
+  const par = stretch && wide ? "none" : "xMidYMid meet";
+  const ns = 'vector-effect="non-scaling-stroke"';
+  const body = {
+    short: `<line x1="44" y1="8" x2="76" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" ${ns}/>`,
+    long: `<line x1="2" y1="8" x2="118" y2="8" stroke="currentColor" stroke-width="1.5" ${ns}/>`,
+    dashed: `<line x1="2" y1="8" x2="118" y2="8" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 5" ${ns}/>`,
+    double: `<line x1="2" y1="6" x2="118" y2="6" stroke="currentColor" stroke-width="1" ${ns}/><line x1="2" y1="10" x2="118" y2="10" stroke="currentColor" stroke-width="1" ${ns}/>`,
+    dots: `<circle cx="48" cy="8" r="2" fill="currentColor"/><circle cx="60" cy="8" r="2" fill="currentColor"/><circle cx="72" cy="8" r="2" fill="currentColor"/>`,
+    diamond: `<line x1="24" y1="8" x2="52" y2="8" stroke="currentColor" stroke-width="1"/><line x1="68" y1="8" x2="96" y2="8" stroke="currentColor" stroke-width="1"/><polygon points="60,4 64,8 60,12 56,8" fill="currentColor"/>`,
+    wave: `<path d="M32 8 q3.5 -4 7 0 t7 0 t7 0 t7 0 t7 0 t7 0 t7 0 t7 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`
+  }[id];
+  return `<svg viewBox="0 0 120 16" preserveAspectRatio="${par}" aria-hidden="true">${body}</svg>`;
+}
+function drawDivider(id, color, x0, mid, w, sz) {
+  ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineCap = "round";
+  const cx = x0 + w / 2, k = S.divW / 100;
+  const line = (a, b, y) => { ctx.beginPath(); ctx.moveTo(a, y); ctx.lineTo(b, y); ctx.stroke(); };
+  ctx.lineWidth = Math.max(1, sz * 0.045) * k;
+  if (id === "short") { const L = Math.min(w * 0.5, sz * 3); ctx.lineWidth = Math.max(2, sz * 0.07) * k; line(cx - L / 2, cx + L / 2, mid); }
+  else if (id === "long") line(x0, x0 + w, mid);
+  else if (id === "dashed") { ctx.lineCap = "butt"; ctx.setLineDash([sz * 0.35, sz * 0.3]); line(x0, x0 + w, mid); }
+  else if (id === "double") { const g = Math.max(4, sz * 0.14) * Math.max(1, k * 0.8); ctx.lineWidth = Math.max(1, sz * 0.03) * k; line(x0, x0 + w, mid - g / 2); line(x0, x0 + w, mid + g / 2); }
+  else if (id === "dots") { const r = Math.max(2, sz * 0.075) * k, gap = sz * 0.9; [-1, 0, 1].forEach(n => { ctx.beginPath(); ctx.arc(cx + n * gap, mid, r, 0, Math.PI * 2); ctx.fill(); }); }
+  else if (id === "diamond") {
+    const d = Math.max(4, sz * 0.16) * Math.sqrt(k), L = Math.min(w * 0.45, sz * 5);
+    ctx.lineWidth = Math.max(1, sz * 0.03) * k; line(cx - L, cx - d * 2.2, mid); line(cx + d * 2.2, cx + L, mid);
+    ctx.beginPath(); ctx.moveTo(cx, mid - d); ctx.lineTo(cx + d, mid); ctx.lineTo(cx, mid + d); ctx.lineTo(cx - d, mid); ctx.closePath(); ctx.fill();
+  }
+  else if (id === "wave") {
+    const L = Math.min(w * 0.6, sz * 6), A = sz * 0.12, per = sz * 0.9;
+    ctx.lineWidth = Math.max(1.5, sz * 0.05) * k; ctx.beginPath();
+    for (let x = 0; x <= L; x += 2) { const y = mid + Math.sin(x / per * Math.PI * 2) * A; x === 0 ? ctx.moveTo(cx - L / 2 + x, y) : ctx.lineTo(cx - L / 2 + x, y); }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function insertDivider(id) {
+  const t = ta(), ch = DIVS.find(d => d.id === id).ch;
+  const a = t.selectionStart, b = t.selectionEnd, before = S.text.slice(0, a), after = S.text.slice(b);
+  const pre = a === 0 || before.endsWith("\n") ? "" : "\n";
+  const post = after.startsWith("\n") ? "" : "\n";
+  const piece = pre + ch + post;
+  S.text = before + piece + after;
+  S.styles = S.styles.slice(0, a).concat(Array.from({ length: piece.length }, () => null), S.styles.slice(b));
+  t.value = S.text; prevText = S.text;
+  const pos = Math.min(S.text.length, a + pre.length + 2);
+  t.focus(); t.setSelectionRange(pos, pos);
+  renderMirror(); update();
+}
 const NO_START = new Set([...".,!?…·:;)]}〉》」』”’、。，．！？~ー-"]);
 function fontFor(f, bold, size, italic) {
   const wi = bold ? 3 : S.weight;
@@ -805,7 +897,7 @@ function layout(maxW, size) {
     const key = font + "|" + t[i];
     let w = widthCache.get(key);
     if (w === undefined) { ctx.font = font; w = ctx.measureText(t[i]).width; widthCache.set(key, w); }
-    glyphs.push({ ch: t[i], w: w + S.ls, font, color: charColor(i, qc), h: st.h || null, b: !!st.b, u: !!st.u });
+    glyphs.push({ ch: t[i], w: w + S.ls, font, color: charColor(i, qc), h: st.h || null, b: !!st.b, u: !!st.u, dcol: st.c ? S.slots[st.c] : null });
   }
   // paragraphs
   const paras = []; let cur = [];
@@ -816,6 +908,7 @@ function layout(maxW, size) {
   const indentW = S.indent ? size : 0;
   paras.forEach(p => {
     if (!p.length) { lines.push({ g: [], last: true, paraEnd: true, indent: 0 }); return; }
+    if (p.length === 1 && DIVMAP[p[0].ch]) { lines.push({ g: [], div: DIVMAP[p[0].ch], dcol: p[0].dcol, last: true, paraEnd: true, indent: 0 }); return; }
     let line = [], lw = 0, first = true;
     const avail = () => maxW - (first ? indentW : 0);
     const push = (last) => {
@@ -865,7 +958,8 @@ function measure(W, size) {
   const colW = S.cols === 2 ? (W - S.padX * 2 - S.colGap) / 2 : W - S.padX * 2;
   const lines = layout(colW, sz);
   const lineH = sz * S.lh;
-  const hs = lines.map(l => lineH + (l.paraEnd ? S.pg : 0));
+  const divH = sz + S.divGap * 2;
+  const hs = lines.map(l => (l.div ? divH : lineH) + (l.paraEnd ? S.pg : 0));
   const total = hs.reduce((a, b) => a + b, 0) - (lines.length ? (lines[lines.length - 1].paraEnd ? S.pg : 0) : 0);
   let split = lines.length, colH = total;
   if (S.cols === 2 && lines.length > 1) {
@@ -914,6 +1008,7 @@ function drawBg(W, H) {
 }
 
 function drawLine(line, x0, y, colW, lineH, sz) {
+  if (line.div) { drawDivider(line.div, line.dcol || S.divColor, x0, y + (sz + S.divGap * 2) / 2, colW, sz); return; }
   const gs = line.g; if (!gs.length) return;
   const natural = gs.reduce((a, g) => a + g.w, 0) - S.ls;
   const avail = colW - line.indent;
@@ -1052,7 +1147,7 @@ function update() {
 }
 let tbSig = "";
 function renderToolbarIfNeeded() {
-  const sig = JSON.stringify([S.slots, S.hl]); if (sig !== tbSig) { tbSig = sig; renderToolbar(); }
+  const sig = JSON.stringify([S.slots, S.hl, S.divColor]); if (sig !== tbSig) { tbSig = sig; renderToolbar(); }
   renderMirror();
 }
 
@@ -1223,7 +1318,7 @@ function renderPresets() {
     const sub = document.createElement("span"); sub.textContent = `${f.name} · ${d.size}px · ${sizeTxt} · ${d.cols === 2 ? "2단" : "1단"}${p.img ? " · 사진" : ""}`;
     info.append(nm, sub);
     if (typeof d.text === "string" && d.text.trim()) {
-      const ex = document.createElement("span"); const first = d.text.trim().split("\n")[0];
+      const ex = document.createElement("span"); const first = d.text.replace(/[\uE101-\uE107]/g, "—").trim().split("\n")[0];
       ex.textContent = "“" + (first.length > 28 ? first.slice(0, 28) + "…" : first) + "”"; info.appendChild(ex);
     }
     const bt = document.createElement("div"); bt.className = "pbtns";
