@@ -336,21 +336,13 @@ input[type=text], input[type=number], select {
         </details>
         <div class="divider"></div>
         <div class="sec">
-          <h3 style="margin:0;font-size:13px">배경</h3>
+          <div class="sec-h"><h3>배경</h3>
+            <div class="bar"><button class="btn sm" id="paperWhite" type="button">흰색</button><button class="btn sm" id="paperBlack" type="button">검은색</button></div>
+          </div>
           <div class="seg" id="bgSeg"></div>
           <div class="colors" id="bgColors"></div>
           <div class="field" id="gdirRow"><span class="lbl">그라데이션 방향</span><div class="seg" id="gdirSeg"></div></div>
-          <div id="imgBox" class="sec" hidden>
-            <div class="filebox"><input id="bgfile" type="file" accept="image/*" aria-label="배경 사진"></div>
-            <div class="slider"><span class="lbl">확대</span><input id="imgZoom" type="range" min="100" max="400" step="1"><output></output></div>
-            <div class="slider"><span class="lbl">좌우 이동</span><input id="imgX" type="range" min="-100" max="100" step="1"><output></output></div>
-            <div class="slider"><span class="lbl">상하 이동</span><input id="imgY" type="range" min="-100" max="100" step="1"><output></output></div>
-            <div class="bar"><button class="btn sm" id="imgReset" type="button">크기·위치 처음으로</button></div>
-            <p class="hint">사진 위치는 위의 확대·이동으로만 바뀌어요. 넣은 사진은 이 브라우저에 기억돼요.</p>
-            <div class="slider"><span class="lbl">블러</span><input id="blur" type="range" min="0" max="30" step="1"><output></output></div>
-            <div class="field"><span class="lbl">덮개</span><div class="seg" id="ovSeg"></div></div>
-            <div class="slider"><span class="lbl">덮개 농도</span><input id="ovAmt" type="range" min="0" max="0.9" step="0.05"><output></output></div>
-          </div>
+          <p class="hint">이미지가 용지보다 작아서 용지가 남는다면, 그곳은 이 배경색으로 칠해져요. 흰색·검은색 버튼은 글자색도 어울리게 같이 바꿔요.</p>
         </div>
       </div>
 
@@ -377,6 +369,7 @@ input[type=text], input[type=number], select {
               <div class="slider" id="layBandHRow"><span class="lbl">세로 높이</span><input id="layBandH" type="range" min="100" max="2400" step="10"><output></output></div>
               <div class="slider" id="layPadRow"><span class="lbl">바깥 여백</span><input id="layPad" type="range" min="0" max="200" step="2"><output></output></div>
               <div class="slider" id="layGapRow"><span class="lbl">글과 간격</span><input id="layGap" type="range" min="0" max="200" step="2"><output></output></div>
+              <div class="slider" id="layMetaGapRow"><span class="lbl">출처와 간격</span><input id="layMetaGap" type="range" min="10" max="200" step="2"><output></output></div>
               <p class="hint" id="layPadHint">바깥 여백은 용지 가장자리와 사진 사이, 글과 간격은 사진과 글 사이 거리예요.</p>
               <div class="slider" id="layRadiusRow"><span class="lbl">모서리</span><input id="layRadius" type="range" min="0" max="120" step="2"><output></output></div>
               <button class="btn soft" id="layFit" type="button">사진이 안 잘리게 용지 높이 맞추기</button>
@@ -403,7 +396,7 @@ input[type=text], input[type=number], select {
               </div>
             </details>
           </div>
-          <p class="hint">분할 테마에서는 글이 이미지 옆의 남은 칸에 들어가요. 글 칸의 여백은 ‘용지’ 탭, 바탕색은 ‘색상’ 탭의 용지 색, 글자색은 ‘색상’ 탭을 따라요. 넣은 사진은 이 브라우저에 기억되고 프리셋에도 함께 저장돼요.</p>
+          <p class="hint">분할 테마에서는 글이 이미지 옆의 남은 칸에 들어가요. 글 박스 가장자리 여백은 ‘용지’ 탭의 ‘여백’, 바탕색은 ‘용지’ 탭의 ‘배경’, 글자색은 ‘색상’ 탭을 따라요. 넣은 사진은 이 브라우저에 기억되고 프리셋에도 함께 저장돼요.</p>
         </div>
       </div>
 
@@ -435,17 +428,6 @@ input[type=text], input[type=number], select {
 
       <!-- 색상 -->
       <div class="pane" data-pane="color" hidden>
-        <div class="sec">
-          <div class="sec-h"><h3>용지 색</h3></div>
-          <div class="crow">
-            <label class="cpick" id="paperPick"><input id="paperColor" type="color" aria-label="용지 색 고르기"></label>
-            <input id="paperHex" type="text" inputmode="text" maxlength="7" spellcheck="false" autocomplete="off" placeholder="#FFFFFF" aria-label="용지 색 헥스코드" style="flex:1;font-variant-numeric:tabular-nums;text-transform:uppercase">
-            <button class="btn sm" id="paperWhite" type="button">흰색</button>
-            <button class="btn sm" id="paperBlack" type="button">검은색</button>
-          </div>
-          <p class="hint">이미지 테마를 쓸 때 사진 밖 빈 곳(여백·글 칸)의 색이에요. 헥스코드(예: #F5F1E8)를 바로 적어도 돼요. 흰색·검은색 버튼은 글자색도 어울리게 같이 바꿔요.</p>
-        </div>
-        <div class="divider"></div>
         <div class="sec">
           <h3 style="margin:0;font-size:13px">기본 글자</h3>
           <div class="colors" id="baseColors"></div>
@@ -495,7 +477,7 @@ input[type=text], input[type=number], select {
             <input id="pName" type="text" placeholder="프리셋 이름 (예: 새벽 2단)" aria-label="프리셋 이름" maxlength="30">
             <button class="btn primary" id="pSave" type="button">저장</button>
           </div>
-          <p class="hint">지금 화면 그대로 저장해요. 본문과 글자색·형광펜·굵게·기울임·밑줄, 작품 정보, 글꼴·간격, 색, 용지 크기, 배경 사진까지 모두 들어가요. 프리셋은 이 기기의 이 브라우저에 남아 있어요.</p>
+          <p class="hint">지금 화면 그대로 저장해요. 본문과 글자색·형광펜·굵게·기울임·밑줄, 작품 정보, 글꼴·간격, 색, 용지 크기, 테마 이미지까지 모두 들어가요. 프리셋은 이 기기의 이 브라우저에 남아 있어요.</p>
           <p class="status" id="pStatus" role="status"></p>
         </div>
         <div class="divider"></div>
@@ -548,14 +530,14 @@ const DEFAULTS = {
   work: SAMPLE_META.work, chr: SAMPLE_META.chr, maker: SAMPLE_META.maker, ep: SAMPLE_META.ep, nick: "", showMeta: true, metaAlign: "left", mWork: 30, mInfo: 25,
   smartq: true, indent: false,
   ratio: "4:5", cols: 1, colGap: 80, colRule: false, padX: 120, padY: 130, valign: "middle",
-  bgMode: "solid", bg1: "#ffffff", bg2: "#ffffff", bg3: "#ffffff", gdir: "diag", blur: 0, ov: "dark", ovAmt: 0.45, paperW: 1080, paperH: 1350, imgZoom: 100, imgX: 0, imgY: 0,
+  bgMode: "solid", bg1: "#ffffff", bg2: "#ffffff", bg3: "#ffffff", gdir: "diag", paperW: 1080, paperH: 1350,
   font: "pretendard", weight: 1, align: "justify", brk: "char",
   size: 44, ls: 0, lh: 1.75, pg: 24,
   fg: "#1f1f1f", sub: "#8a8a8a",
   slots: { c1: "#d92f4b", c2: "#2f5fd9", c3: "#1f9d6b", c4: "#8a5ad9" },
   hl: { A: "#fff176", B: "#ffc4d6", C: "#b8e6ff" }, hlStyle: "under", hlAlpha: 0.75,
   qOn: true, q: { A: "#2f5fd9", B: "#8a5ad9", C: "#c47a1a" }, qScope: "all", divColor: "#b5b5b5", divW: 100, divGap: 24,
-  lay: "none", laySide: "left", layBand: "top", layShare: 40, layBandH: 480, layPad: 48, layGap: 56, layRadius: 0, layZoom: 100, layX: 0, layY: 0, layOv: "none", layOvAmt: 0.3, paperCol: "#ffffff"
+  lay: "none", laySide: "left", layBand: "top", layShare: 40, layBandH: 480, layPad: 48, layGap: 56, layMetaGap: 60, layRadius: 0, layZoom: 100, layX: 0, layY: 0, layOv: "none", layOvAmt: 0.3
 };
 const PAPER = { white: { bg: "#ffffff", fg: "#1f1f1f", sub: "#8a8a8a" }, black: { bg: "#111111", fg: "#f0eee9", sub: "#8e8b85" } };
 // an image theme is in use: split layout, or a picture on the basic layout
@@ -565,14 +547,8 @@ function normHex(v) {
   if (/^[0-9a-f]{3}$/i.test(h)) h = h.split("").map(c => c + c).join("");
   return /^[0-9a-f]{6}$/i.test(h) ? "#" + h.toLowerCase() : null;
 }
-function paperBg() { return PAPER[S.paperCol] ? PAPER[S.paperCol].bg : normHex(S.paperCol) || "#ffffff"; }
-function syncPaperCol() {
-  const c = paperBg(); S.paperCol = c;
-  $("paperColor").value = c; $("paperPick").style.background = c;
-  if (document.activeElement !== $("paperHex")) $("paperHex").value = c.toUpperCase();
-}
 const LAYS = [
-  { id: "none", name: "기본 · 전체 이미지", hint: "사진을 넣으면 용지 전체가 이미지가 되고 그 위에 글이 올라가요. 사진이 용지보다 작으면 남는 곳은 ‘색상’ 탭의 용지 색(흰색·검은색)이 돼요. 사진을 빼면 ‘용지’ 탭의 배경이 그대로 보여요.",
+  { id: "none", name: "기본 · 전체 이미지", hint: "사진을 넣으면 용지 전체가 이미지가 되고 그 위에 글이 올라가요. 사진이 용지보다 작으면 남는 곳은 ‘용지’ 탭의 배경이 보여요.",
     svg: '<rect x="1" y="1" width="54" height="38" rx="3" fill="currentColor" opacity=".28"/><rect x="1" y="1" width="54" height="38" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="14" x2="44" y2="14"/><line x1="12" y1="20" x2="44" y2="20"/><line x1="12" y1="26" x2="34" y2="26"/></g>' },
   { id: "side", name: "좌우 분할", hint: "한쪽에 세로로 긴 이미지, 반대쪽이 글 칸이에요.",
     svg: '<rect x="1" y="1" width="22" height="38" rx="3" fill="currentColor" opacity=".28"/><rect x="1" y="1" width="54" height="38" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".7"><line x1="29" y1="14" x2="49" y2="14"/><line x1="29" y1="20" x2="49" y2="20"/><line x1="29" y1="26" x2="42" y2="26"/></g>' },
@@ -596,7 +572,7 @@ try {
   }
 } catch (e) {}
 if (!Array.isArray(S.styles) || S.styles.length !== S.text.length) S.styles = sampleStyles(S.text);
-let bgImg = null, themeImg = null, imgHit = null;
+let themeImg = null, imgHit = null;
 
 function sampleStyles(text) {
   const st = Array.from({ length: text.length }, () => null);
@@ -687,22 +663,9 @@ function buildAll() {
   slider("padX", "padX", v => v + "px");
   slider("padY", "padY", v => v + "px");
   seg($("vSeg"), [{ id: "top", name: "위" }, { id: "middle", name: "가운데" }, { id: "bottom", name: "아래" }], "valign");
-  seg($("bgSeg"), [{ id: "solid", name: "단색" }, { id: "grad", name: "2색" }, { id: "grad3", name: "3색" }, { id: "image", name: "사진" }], "bgMode", buildBgColors);
+  seg($("bgSeg"), [{ id: "solid", name: "단색" }, { id: "grad", name: "2색" }, { id: "grad3", name: "3색" }], "bgMode", buildBgColors);
   seg($("gdirSeg"), [{ id: "h", name: "가로" }, { id: "v", name: "세로" }, { id: "diag", name: "대각선" }], "gdir");
-  seg($("ovSeg"), [{ id: "dark", name: "어둡게" }, { id: "light", name: "밝게" }], "ov");
-  slider("blur", "blur", v => v + "px");
-  slider("ovAmt", "ovAmt", v => Math.round(v * 100) + "%");
-  slider("imgZoom", "imgZoom", v => v + "%");
-  slider("imgX", "imgX", v => (v > 0 ? "+" : "") + v);
-  slider("imgY", "imgY", v => (v > 0 ? "+" : "") + v);
-  $("imgReset").onclick = () => { S.imgZoom = 100; S.imgX = 0; S.imgY = 0; syncSliders(); update(); };
-  $("bgfile").addEventListener("change", e => {
-    const f = e.target.files && e.target.files[0]; if (!f) return;
-    const img = new Image();
-    // a new photo keeps the zoom / position already set
-    img.onload = () => { bgImg = img; update(); rememberImage(img); };
-    img.src = URL.createObjectURL(f);
-  });
+
   buildBgColors(); syncColUI();
 
   // theme
@@ -715,12 +678,13 @@ function buildAll() {
     lg.appendChild(b);
   });
   seg($("laySideSeg"), [{ id: "left", name: "왼쪽" }, { id: "right", name: "오른쪽" }], "laySide");
-  seg($("layBandSeg"), [{ id: "top", name: "위" }, { id: "bottom", name: "아래" }], "layBand");
+  seg($("layBandSeg"), [{ id: "top", name: "위" }, { id: "bottom", name: "아래" }], "layBand", syncThemeUI);
   seg($("layOvSeg"), [{ id: "none", name: "없음" }, { id: "dark", name: "어둡게" }, { id: "light", name: "밝게" }], "layOv", syncThemeUI);
   slider("layShare", "layShare", v => v + "%");
   slider("layBandH", "layBandH", v => v + "px");
   slider("layPad", "layPad", v => v + "px");
   slider("layGap", "layGap", v => v + "px");
+  slider("layMetaGap", "layMetaGap", v => v + "px");
   slider("layRadius", "layRadius", v => v + "px");
   slider("layZoom", "layZoom", v => v + "%");
   slider("layX", "layX", v => (v > 0 ? "+" : "") + v);
@@ -789,18 +753,13 @@ function buildAll() {
 
   // colors
   rebuildColors();
-  const setPaper = (hex, matchText) => {
-    S.paperCol = hex;
-    if (matchText) { const pc = matchText; S.fg = pc.fg; S.sub = pc.sub; S.divColor = pc.sub; rebuildColors(); }
-    syncPaperCol(); update();
+  // white / black: solid paper background, text colours matched
+  const setPaper = pc => {
+    S.bgMode = "solid"; S.bg1 = pc.bg; S.fg = pc.fg; S.sub = pc.sub; S.divColor = pc.sub;
+    seg($("bgSeg"), ...$("bgSeg")._seg); buildBgColors(); rebuildColors(); update();
   };
-  $("paperColor").addEventListener("input", e => setPaper(e.target.value));
-  $("paperHex").addEventListener("input", e => { const h = normHex(e.target.value); if (h) setPaper(h); });
-  $("paperHex").addEventListener("blur", () => syncPaperCol());
-  $("paperHex").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
-  $("paperWhite").onclick = () => setPaper(PAPER.white.bg, PAPER.white);
-  $("paperBlack").onclick = () => setPaper(PAPER.black.bg, PAPER.black);
-  syncPaperCol();
+  $("paperWhite").onclick = () => setPaper(PAPER.white);
+  $("paperBlack").onclick = () => setPaper(PAPER.black);
   seg($("hlStyleSeg"), [{ id: "under", name: "형광펜 (아래쪽)" }, { id: "full", name: "전체 칠" }, { id: "line", name: "밑줄" }], "hlStyle");
   slider("hlAlpha", "hlAlpha", v => Math.round(v * 100) + "%");
   slider("divW", "divW", v => v + "%");
@@ -831,8 +790,6 @@ function rebuildColors() {
 function buildBgColors() {
   const el = $("bgColors"); el.innerHTML = "";
   const m = S.bgMode;
-  if (m === "image") { $("imgBox").hidden = false; $("gdirRow").hidden = true; return; }
-  $("imgBox").hidden = true;
   $("gdirRow").hidden = m === "solid";
   colorRow(el, m === "solid" ? "배경색" : "배경 A", () => S.bg1, v => S.bg1 = v);
   if (m !== "solid") colorRow(el, "배경 B", () => S.bg2, v => S.bg2 = v);
@@ -842,7 +799,13 @@ function syncAlign() {
   document.querySelectorAll("#tbAlign .albtn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.al === S.align)));
   document.querySelectorAll("#metaAlign .albtn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.al === (S.metaAlign === "right" ? "right" : "left"))));
 }
+function takePaperCol(src) {
+  const c = src && normHex(src.paperCol);
+  if (c && (S.lay === "side" || S.lay === "band")) { S.bgMode = "solid"; S.bg1 = c; }
+  delete S.paperCol;
+}
 function dropAuto() {
+  if (S.bgMode === "image") S.bgMode = "solid";
   if (S.ratio !== "auto" && RATIOS.some(r => r.id === S.ratio)) return;
   S.ratio = "custom";
   try { S.paperH = Math.min(8000, Math.max(300, Math.ceil(needH(S.paperW)))); } catch (e) {}
@@ -861,6 +824,7 @@ function syncThemeUI() {
   $("layPadHint").textContent = S.lay === "band"
     ? "바깥 여백은 사진 좌우의 여백이에요. 용지 위아래 끝 여백은 ‘용지’ 탭의 위아래 여백을 따라서 위아래가 똑같이 맞춰져요. 글과 간격은 사진과 글 사이 거리예요."
     : "바깥 여백은 용지 가장자리와 사진 사이, 글과 간격은 사진과 글 사이 거리예요.";
+  $("layMetaGapRow").hidden = !(S.lay === "band" && S.layBand === "bottom");
   $("layPadRow").hidden = !split; $("layGapRow").hidden = !split; $("layPadHint").hidden = !split;
   $("layRadiusRow").hidden = !split;
   $("layOvBox").hidden = S.lay !== "none";
@@ -996,9 +960,9 @@ function hexA(hex, a) {
 }
 function renderMirror() {
   const m = $("mirror"), t = displayText(), qc = quoteColors(t);
-  const base = themed() ? paperBg() : S.bgMode === "image" ? "#2a2a2a" : S.bg1;
+  const base = S.bg1;
   $("text").closest(".edwrap").style.background = base;
-  m.style.color = !themed() && S.bgMode === "image" ? "#ffffff" : S.fg;
+  m.style.color = S.fg;
   m.innerHTML = "";
   let i = 0;
   const frag = document.createDocumentFragment();
@@ -1163,11 +1127,13 @@ function layout(maxW, size) {
   return lines;
 }
 
+// extra room between the short divider line above the credits and the credits title
+const META_LINE_EXTRA = 7;
 function metaBlockH() {
   const has = S.showMeta && (S.work.trim() || S.chr.trim() || S.maker.trim() || S.ep.trim());
   if (!has) return 0;
   const fs = (FONTS.find(x => x.id === S.font).scale || 1);
-  return 40 + (S.work.trim() ? Math.round(S.mWork * fs * 1.5) : 0) + ((S.chr.trim() || S.ep.trim()) ? Math.round(S.mInfo * 1.6) : 0) + (S.maker.trim() ? Math.round(S.mInfo * 1.6) : 0) + 24;
+  return 40 + META_LINE_EXTRA + (S.work.trim() ? Math.round(S.mWork * fs * 1.5) : 0) + ((S.chr.trim() || S.ep.trim()) ? Math.round(S.mInfo * 1.6) : 0) + (S.maker.trim() ? Math.round(S.mInfo * 1.6) : 0) + 24;
 }
 /* ---------------- image themes: split paper into image box + text box ---------------- */
 function layShare() { return Math.min(0.85, Math.max(0.1, S.layShare / 100)); }
@@ -1195,11 +1161,11 @@ function regions(W, H) {
     // image at the bottom: text, then image, then the credits block last of all
     const bot = bandBottomReserve(), iy = H - bot - bh, th = iy - S.layGap + S.padY, mh = metaBlockH();
     return { img: { x: bx, y: iy, w: bw, h: bh }, txt: { x: 0, y: 0, w: W, h: th },
-      metaTop: mh ? H - bot : null, nick: { x: W - 40, y: H - 34 } };
+      metaTop: mh ? iy + bh + S.layMetaGap - 26 : null, nick: { x: W - 40, y: H - 34 } };
   }
   return { img: themeImg ? { x: 0, y: 0, w: W, h: H } : null, txt: { x: 0, y: 0, w: W, h: H } };
 }
-function bandBottomReserve() { const mh = metaBlockH(); return mh ? mh + Math.max(0, S.padY - 24) : S.padY; }
+function bandBottomReserve() { const mh = metaBlockH(); return mh ? mh + Math.max(0, S.padY - 24) + S.layMetaGap - 26 : S.padY; }
 function needH(W) {
   const m = measure(W, S.size), n = m.contentH + S.padY * 2 + metaBlockH();
   if (S.lay === "band" && S.layBand === "bottom") return m.contentH + S.padY + S.layGap + S.layBandH + bandBottomReserve();
@@ -1217,8 +1183,7 @@ function drawThemeImage(r) {
   ctx.save();
   roundPath(x, y, w, h, full ? 0 : Math.min(S.layRadius, w / 2, h / 2)); ctx.clip();
   if (themeImg) {
-    // whatever the picture doesn't cover stays white
-    ctx.fillStyle = paperBg(); ctx.fillRect(x, y, w, h);
+    // whatever the picture doesn't cover shows the paper background drawn underneath
     // full paper: whole picture visible (no cropping); split box: picture fills the box
     // size and position are worked out against a remembered box height, so a longer/shorter text never moves or rescales the picture
     const rh = h;
@@ -1298,24 +1263,11 @@ function heightFor(ratioId, W) {
 /* ---------------- drawing ---------------- */
 function drawBg(W, H) {
   ctx.save();
-  if (S.bgMode === "image" && bgImg) {
-    ctx.fillStyle = S.bg1; ctx.fillRect(0, 0, W, H);
-    const rh = H;
-    const s = Math.max(W / bgImg.width, rh / bgImg.height) * (S.imgZoom / 100), iw = bgImg.width * s, ih = bgImg.height * s;
-    const x = (W - iw) / 2 + (S.imgX / 100) * W / 2, y = (rh - ih) / 2 + (S.imgY / 100) * rh / 2;
-    if (S.blur) ctx.filter = `blur(${S.blur}px)`;
-    const bl = S.blur * 2;
-    ctx.drawImage(bgImg, x - bl, y - bl, iw + bl * 2, ih + bl * 2);
-    ctx.filter = "none";
-    ctx.fillStyle = S.ov === "dark" ? `rgba(0,0,0,${S.ovAmt})` : `rgba(255,255,255,${S.ovAmt})`;
-    ctx.fillRect(0, 0, W, H);
-  } else if (S.bgMode === "grad" || S.bgMode === "grad3") {
+  if (S.bgMode === "grad" || S.bgMode === "grad3") {
     const g = S.gdir === "h" ? ctx.createLinearGradient(0, 0, W, 0) : S.gdir === "v" ? ctx.createLinearGradient(0, 0, 0, H) : ctx.createLinearGradient(0, 0, W, H);
     g.addColorStop(0, S.bg1);
     if (S.bgMode === "grad3") { g.addColorStop(0.5, S.bg2); g.addColorStop(1, S.bg3); } else g.addColorStop(1, S.bg2);
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  } else if (S.bgMode === "image") {
-    ctx.fillStyle = "#2a2a2a"; ctx.fillRect(0, 0, W, H);
   } else { ctx.fillStyle = S.bg1; ctx.fillRect(0, 0, W, H); }
   ctx.restore();
 }
@@ -1352,7 +1304,7 @@ function drawLine(line, x0, y, colW, lineH, sz) {
   }
   // text
   ctx.textBaseline = "middle"; ctx.textAlign = "left";
-  const defCol = !themed() && S.bgMode === "image" && bgImg && S.ov === "dark" ? "#ffffff" : S.fg;
+  const defCol = S.fg;
   gs.forEach((g, k) => {
     if (g.ch === " ") return;
     ctx.font = g.font; ctx.fillStyle = g.color || defCol;
@@ -1377,7 +1329,7 @@ function draw() {
   if (cv.width !== W) cv.width = W;
   if (cv.height !== H) cv.height = H;
   imgHit = null;
-  if (themed()) { ctx.fillStyle = paperBg(); ctx.fillRect(0, 0, W, H); } else drawBg(W, H);
+  drawBg(W, H);
   const R = regions(W, H), T = R.txt;
   if (R.img) drawThemeImage(R.img);
 
@@ -1408,7 +1360,7 @@ function draw() {
 
   // meta block
   const f = FONTS.find(x => x.id === S.font);
-  const subCol = !themed() && S.bgMode === "image" && bgImg && S.ov === "dark" ? "rgba(255,255,255,.8)" : S.sub;
+  const subCol = S.sub;
   if (metaH) {
     const al = S.metaAlign === "right" ? "right" : "left";
     const mx = al === "center" ? T.x + T.w / 2 : al === "right" ? T.x + T.w - S.padX : T.x + S.padX;
@@ -1417,10 +1369,11 @@ function draw() {
     ctx.beginPath();
     const lx = al === "center" ? T.x + T.w / 2 - 24 : al === "right" ? T.x + T.w - S.padX - 48 : T.x + S.padX;
     ctx.moveTo(lx, y - 14); ctx.lineTo(lx + 48, y - 14); ctx.stroke();
+    y += META_LINE_EXTRA;
     ctx.textAlign = al; ctx.textBaseline = "top";
     if (S.work.trim()) {
       ctx.font = `${f.w[3]} ${S.mWork * (f.scale || 1)}px ${f.css}, "Pretendard", sans-serif`;
-      ctx.fillStyle = !themed() && S.bgMode === "image" && bgImg && S.ov === "dark" ? "#ffffff" : S.fg;
+      ctx.fillStyle = S.fg;
       ctx.fillText(`『${S.work.trim()}』`, mx, y + 4); y += Math.round(S.mWork * (f.scale || 1) * 1.5);
     }
     ctx.font = `400 ${S.mInfo}px "Pretendard", sans-serif`; ctx.fillStyle = subCol;
@@ -1517,23 +1470,9 @@ $("save").onclick = async () => {
   }
 };
 
-/* ---------------- background photo: remember ---------------- */
+/* the paper-tab background photo was removed: free the space an old one used */
+try { localStorage.removeItem("excerpt-bg"); } catch (e) {}
 function syncSliders() { SLIDERS.forEach(x => { x.inp.value = S[x.key]; x.out.textContent = x.fmt(S[x.key]); }); }
-function rememberImage(img) {
-  // keep a downscaled copy so the photo survives a reload
-  try {
-    const max = 1800, k = Math.min(1, max / Math.max(img.width, img.height));
-    const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-    let q = 0.88, url = c.toDataURL("image/jpeg", q);
-    while (url.length > 3500000 && q > 0.4) { q -= 0.12; url = c.toDataURL("image/jpeg", q); }
-    localStorage.setItem("excerpt-bg", url);
-  } catch (e) { try { localStorage.removeItem("excerpt-bg"); } catch (_) {} }
-}
-try {
-  const url = localStorage.getItem("excerpt-bg");
-  if (url) { const im = new Image(); im.onload = () => { bgImg = im; update(); }; im.src = url; }
-} catch (e) {}
 
 /* ---------------- photo store for presets (IndexedDB holds large images) ---------------- */
 const IDB = (() => {
@@ -1565,13 +1504,6 @@ const THEME_KEY = "__theme";
 function rememberTheme(img) { imageBlob(img).then(b => IDB.put(THEME_KEY, b)).catch(() => {}); }
 IDB.get(THEME_KEY).then(b => b && blobToImage(b)).then(im => { if (im && !themeImg) { themeImg = im; syncThemeUI(); update(); } }).catch(() => {});
 
-const thumbCache = new Map();
-async function thumbUrl(p) {
-  const key = p.id + ":" + p.at;
-  if (thumbCache.has(key)) return thumbCache.get(key);
-  const blob = await IDB.get(p.id); if (!blob) return null;
-  const url = URL.createObjectURL(blob); thumbCache.set(key, url); return url;
-}
 
 /* ---------------- presets ---------------- */
 const P_KEY = "excerpt-presets";
@@ -1592,7 +1524,7 @@ function syncUI() {
   ta().value = S.text; prevText = S.text; grow();
   document.querySelectorAll(".seg").forEach(el => { if (el._seg) seg(el, ...el._seg); });
   [...$("fontGrid").children].forEach((b, i) => b.setAttribute("aria-pressed", String(FONTS[i].id === S.font)));
-  rebuildColors(); buildBgColors(); syncColUI(); syncThemeUI(); syncPaperCol(); syncAlign(); renderToolbar(); renderMirror();
+  rebuildColors(); buildBgColors(); syncColUI(); syncThemeUI(); syncAlign(); renderToolbar(); renderMirror();
 }
 async function fillPreset(p) {
   // copy current design (and photo, if one is in use) into preset p
@@ -1602,16 +1534,10 @@ async function fillPreset(p) {
     try { await IDB.put(p.id + ":t", await imageBlob(themeImg)); p.timg = true; }
     catch (e) { p.timg = false; tOk = false; }
   } else { if (p.timg) IDB.del(p.id + ":t").catch(() => {}); p.timg = false; }
-  if (!tOk) { await fillBg(p); return false; }
-  return fillBg(p);
-}
-async function fillBg(p) {
-  if (S.bgMode === "image" && bgImg) {
-    try { await IDB.put(p.id, await imageBlob(bgImg)); p.img = true; return true; }
-    catch (e) { p.img = false; return false; }
-  }
+  // old presets may still hold a paper-tab background photo: drop it
   if (p.img) IDB.del(p.id).catch(() => {});
-  p.img = false; return true;
+  p.img = false;
+  return tOk;
 }
 async function applyPreset(p) {
   const d = p.data || {};
@@ -1620,16 +1546,9 @@ async function applyPreset(p) {
     if (["slots", "hl", "q"].includes(k)) S[k] = Object.assign({}, DEFAULTS[k], d[k]);
     else S[k] = clone(d[k]);
   });
-  dropAuto();
+  takePaperCol(d); dropAuto();
   syncUI(); update();
   let note = "";
-  if (p.img) {
-    try {
-      const blob = await IDB.get(p.id);
-      if (blob) { bgImg = await blobToImage(blob); rememberImage(bgImg); update(); }
-      else note = " 저장된 사진을 찾지 못해서 지금 사진을 그대로 뒀어요.";
-    } catch (e) { note = " 사진은 불러오지 못했어요."; }
-  }
   if (!p.timg && themeImg) { themeImg = null; IDB.del(THEME_KEY).catch(() => {}); syncThemeUI(); update(); }
   if (p.timg) {
     try {
@@ -1642,7 +1561,6 @@ async function applyPreset(p) {
 }
 function bgCss(d) {
   if (d.bgMode === "grad" || d.bgMode === "grad3") return `linear-gradient(135deg, ${d.bg1}, ${d.bg2}${d.bgMode === "grad3" ? ", " + d.bg3 : ""})`;
-  if (d.bgMode === "image") return "#3a3a3a";
   return d.bg1;
 }
 function renderPresets() {
@@ -1659,12 +1577,11 @@ function renderPresets() {
     const r = RATIOS.find(x => x.id === d.ratio) || RATIOS[1];
     const item = document.createElement("div"); item.className = "pitem";
     const th = document.createElement("div"); th.className = "pthumb"; th.style.background = bgCss(d);
-    th.style.color = d.bgMode === "image" ? "#fff" : d.fg; th.style.fontFamily = f.css + ", serif"; th.textContent = "가";
-    if (p.img) thumbUrl(p).then(u => { if (u) { th.style.background = `#3a3a3a url("${u}") center / cover`; th.style.textShadow = "0 1px 3px rgba(0,0,0,.6)"; } }).catch(() => {});
+    th.style.color = d.fg; th.style.fontFamily = f.css + ", serif"; th.textContent = "가";
     const info = document.createElement("div"); info.className = "pinfo";
     const nm = document.createElement("b"); nm.textContent = p.name;
     const W = d.paperW || 1080, sizeTxt = r.id === "custom" ? `${W}×${d.paperH}` : `${r.id} · 폭 ${W}`;
-    const sub = document.createElement("span"); sub.textContent = `${f.name} · ${d.size}px · ${sizeTxt} · ${d.cols === 2 ? "2단" : "1단"}${p.img ? " · 사진" : ""}${d.lay === "side" ? " · 좌우 분할" : d.lay === "band" ? " · 위아래 분할" : p.timg ? " · 전체 이미지" : ""}`;
+    const sub = document.createElement("span"); sub.textContent = `${f.name} · ${d.size}px · ${sizeTxt} · ${d.cols === 2 ? "2단" : "1단"}${d.lay === "side" ? " · 좌우 분할" : d.lay === "band" ? " · 위아래 분할" : p.timg ? " · 전체 이미지" : ""}`;
     info.append(nm, sub);
     if (typeof d.text === "string" && d.text.trim()) {
       const ex = document.createElement("span"); const first = d.text.replace(/[\uE101-\uE107]/g, "—").trim().split("\n")[0];
@@ -1675,7 +1592,7 @@ function renderPresets() {
     bt.append(
       mkb("적용", "soft", () => applyPreset(p)),
       mkb("덮어쓰기", "", b => {
-        if (b.dataset.arm) { fillPreset(p).then(ok => { savePresets(); renderPresets(); pMsg(ok ? `‘${p.name}’에 지금 디자인을 덮어썼어요.` : `‘${p.name}’을 덮어썼지만 사진은 저장하지 못했어요.`, !ok); }); return; }
+        if (b.dataset.arm) { fillPreset(p).then(ok => { savePresets(); renderPresets(); pMsg(ok ? `‘${p.name}’에 지금 디자인을 덮어썼어요.` : `‘${p.name}’을 덮어썼지만 테마 이미지는 저장하지 못했어요.`, !ok); }); return; }
         b.dataset.arm = "1"; b.textContent = "한 번 더 누르면 덮어써요"; setTimeout(() => { if (b.isConnected) { delete b.dataset.arm; b.textContent = "덮어쓰기"; } }, 3000);
       }),
       mkb("삭제", "danger", b => {
@@ -1696,10 +1613,10 @@ $("pSave").onclick = async () => {
   const ok = savePresets(); renderPresets(); $("pName").value = ""; btn.disabled = false;
   if (!ok) { pMsg("이 브라우저에서는 저장이 막혀 있어요. 시크릿 창이 아닌 일반 창에서 열어 주세요.", true); return; }
   const base = same ? `같은 이름이 있어서 ‘${name}’을 새 디자인으로 바꿨어요.` : `‘${name}’을 저장했어요.`;
-  pMsg(imgOk ? base + (p.img ? " 본문·서식·배경 사진까지 함께 저장했어요." : " 본문과 서식까지 함께 저장했어요.") : base + " 다만 배경 사진은 저장하지 못했어요.", !imgOk);
+  pMsg(imgOk ? base + (p.timg ? " 본문·서식·테마 이미지까지 함께 저장했어요." : " 본문과 서식까지 함께 저장했어요.") : base + " 다만 테마 이미지는 저장하지 못했어요.", !imgOk);
 };
 $("pName").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("pSave").click(); } });
-dropAuto();
+takePaperCol(S); dropAuto();
 buildAll();
 renderPresets();
 renderMirror();
