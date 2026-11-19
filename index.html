@@ -286,6 +286,7 @@ input[type=text], input[type=number], select {
           <div class="sec-h"><h3>작품 정보</h3>
             <label class="toggle" style="gap:6px;font-size:12.5px">표시 <input id="showMeta" type="checkbox"></label>
           </div>
+          <div class="trow"><span class="tl">정렬</span><div class="trow" id="metaAlign"></div></div>
           <div class="field"><input id="work" type="text" placeholder="작품명" aria-label="작품명"></div>
           <div class="grid2">
             <input id="chr" type="text" placeholder="캐릭터" aria-label="캐릭터">
@@ -547,7 +548,7 @@ const PRESETS = [
 const DEFAULTS = {
   text: SAMPLE_TEXT,
   styles: null,
-  work: SAMPLE_META.work, chr: SAMPLE_META.chr, maker: SAMPLE_META.maker, ep: SAMPLE_META.ep, nick: "", showMeta: true, mWork: 30, mInfo: 25,
+  work: SAMPLE_META.work, chr: SAMPLE_META.chr, maker: SAMPLE_META.maker, ep: SAMPLE_META.ep, nick: "", showMeta: true, metaAlign: "left", mWork: 30, mInfo: 25,
   smartq: true, indent: false,
   ratio: "4:5", cols: 1, colGap: 80, colRule: false, padX: 120, padY: 130, valign: "middle",
   bgMode: "solid", bg1: "#ffffff", bg2: "#ffffff", bg3: "#ffffff", gdir: "diag", blur: 0, ov: "dark", ovAmt: 0.45, paperW: 1080, paperH: 1350, imgZoom: 100, imgX: 0, imgY: 0,
@@ -759,6 +760,16 @@ function buildAll() {
     ab.appendChild(b);
   });
   syncAlign();
+  // credits: left / right only
+  const ma = $("metaAlign"); ma.innerHTML = "";
+  ALIGNS.filter(a => a.id === "left" || a.id === "right").forEach(a => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "tbtn albtn"; b.dataset.al = a.id;
+    b.title = "작품 정보 " + a.name; b.setAttribute("aria-label", "작품 정보 " + a.name);
+    b.innerHTML = ab.querySelector(`[data-al="${a.id}"]`).innerHTML;
+    b.onclick = () => { S.metaAlign = a.id; syncAlign(); update(); };
+    ma.appendChild(b);
+  });
+  syncAlign();
   // remember which folded sections are open
   let folds = {}; try { folds = JSON.parse(localStorage.getItem("excerpt-folds") || "{}") || {}; } catch (e) {}
   document.querySelectorAll("details.fold").forEach(d => {
@@ -822,7 +833,10 @@ function buildBgColors() {
   if (m !== "solid") colorRow(el, "배경 B", () => S.bg2, v => S.bg2 = v);
   if (m === "grad3") colorRow(el, "배경 C", () => S.bg3, v => S.bg3 = v);
 }
-function syncAlign() { document.querySelectorAll("#tbAlign .albtn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.al === S.align))); }
+function syncAlign() {
+  document.querySelectorAll("#tbAlign .albtn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.al === S.align)));
+  document.querySelectorAll("#metaAlign .albtn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.al === (S.metaAlign === "right" ? "right" : "left"))));
+}
 function syncColUI() { $("gapRow").hidden = S.cols !== 2; $("ruleRow").hidden = S.cols !== 2; }
 function syncThemeUI() {
   if (S.lay === "full" || !LAYS.some(l => l.id === S.lay)) S.lay = "none";
@@ -1378,7 +1392,7 @@ function draw() {
   const f = FONTS.find(x => x.id === S.font);
   const subCol = !themed() && S.bgMode === "image" && bgImg && S.ov === "dark" ? "rgba(255,255,255,.8)" : S.sub;
   if (metaH) {
-    const al = S.align === "justify" ? "left" : S.align;
+    const al = S.metaAlign === "right" ? "right" : "left";
     const mx = al === "center" ? T.x + T.w / 2 : al === "right" ? T.x + T.w - S.padX : T.x + S.padX;
     let y = (metaOut ? R.metaTop : T.y + T.h - S.padY - metaH) + 40;
     ctx.strokeStyle = hexA(S.sub.startsWith("#") ? S.sub : "#888888", 0.6); ctx.lineWidth = 2;
