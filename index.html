@@ -377,6 +377,7 @@ input[type=text], input[type=number], select {
               <div class="field" id="laySideRow"><span class="lbl">이미지 위치</span><div class="seg" id="laySideSeg"></div></div>
               <div class="field" id="layBandRow"><span class="lbl">이미지 위치</span><div class="seg" id="layBandSeg"></div></div>
               <div class="slider" id="layShareRow"><span class="lbl" id="layShareLbl">가로 폭</span><input id="layShare" type="range" min="15" max="80" step="1"><output></output></div>
+              <div class="slider" id="layBandHRow"><span class="lbl">세로 높이</span><input id="layBandH" type="range" min="100" max="2400" step="10"><output></output></div>
               <div class="slider" id="layPadRow"><span class="lbl">바깥 여백</span><input id="layPad" type="range" min="0" max="200" step="2"><output></output></div>
               <div class="slider" id="layGapRow"><span class="lbl">글과 간격</span><input id="layGap" type="range" min="0" max="200" step="2"><output></output></div>
               <p class="hint" id="layPadHint">바깥 여백은 용지 가장자리와 사진 사이, 글과 간격은 사진과 글 사이 거리예요.</p>
@@ -558,7 +559,7 @@ const DEFAULTS = {
   slots: { c1: "#d92f4b", c2: "#2f5fd9", c3: "#1f9d6b", c4: "#8a5ad9" },
   hl: { A: "#fff176", B: "#ffc4d6", C: "#b8e6ff" }, hlStyle: "under", hlAlpha: 0.75,
   qOn: true, q: { A: "#2f5fd9", B: "#8a5ad9", C: "#c47a1a" }, qScope: "all", divColor: "#b5b5b5", divW: 100, divGap: 24,
-  lay: "none", laySide: "left", layBand: "top", layShare: 40, layPad: 48, layGap: 56, layRadius: 0, layZoom: 100, layX: 0, layY: 0, layOv: "none", layOvAmt: 0.3, paperCol: "#ffffff"
+  lay: "none", laySide: "left", layBand: "top", layShare: 40, layBandH: 480, layPad: 48, layGap: 56, layRadius: 0, layZoom: 100, layX: 0, layY: 0, layOv: "none", layOvAmt: 0.3, paperCol: "#ffffff"
 };
 const PAPER = { white: { bg: "#ffffff", fg: "#1f1f1f", sub: "#8a8a8a" }, black: { bg: "#111111", fg: "#f0eee9", sub: "#8e8b85" } };
 // an image theme is in use: split layout, or a picture on the basic layout
@@ -591,6 +592,11 @@ try {
     S.slots = Object.assign({}, DEFAULTS.slots, saved.slots || {});
     S.hl = Object.assign({}, DEFAULTS.hl, saved.hl || {});
     S.q = Object.assign({}, DEFAULTS.q, saved.q || {});
+    // older saves: turn the old "share of paper height" into a fixed pixel height once
+    if (saved.layBandH === undefined) {
+      const rr = (RATIOS.find(x => x.id === S.ratio) || {}).r || 1.25;
+      S.layBandH = Math.max(100, Math.round(S.paperW * rr * S.layShare / 100 - S.padY));
+    }
   }
 } catch (e) {}
 if (!Array.isArray(S.styles) || S.styles.length !== S.text.length) S.styles = sampleStyles(S.text);
@@ -715,6 +721,7 @@ function buildAll() {
   seg($("layBandSeg"), [{ id: "top", name: "위" }, { id: "bottom", name: "아래" }], "layBand");
   seg($("layOvSeg"), [{ id: "none", name: "없음" }, { id: "dark", name: "어둡게" }, { id: "light", name: "밝게" }], "layOv", syncThemeUI);
   slider("layShare", "layShare", v => v + "%");
+  slider("layBandH", "layBandH", v => v + "px");
   slider("layPad", "layPad", v => v + "px");
   slider("layGap", "layGap", v => v + "px");
   slider("layRadius", "layRadius", v => v + "px");
@@ -846,8 +853,8 @@ function syncThemeUI() {
   $("layBox").hidden = false;
   $("laySideRow").hidden = S.lay !== "side";
   $("layBandRow").hidden = S.lay !== "band";
-  $("layShareRow").hidden = !split;
-  $("layShareLbl").textContent = S.lay === "band" ? "세로 높이" : "가로 폭";
+  $("layShareRow").hidden = S.lay !== "side";
+  $("layBandHRow").hidden = S.lay !== "band";
   $("layPadHint").textContent = S.lay === "band"
     ? "바깥 여백은 사진 좌우의 여백이에요. 용지 위아래 끝 여백은 ‘용지’ 탭의 위아래 여백을 따라서 위아래가 똑같이 맞춰져요. 글과 간격은 사진과 글 사이 거리예요."
     : "바깥 여백은 용지 가장자리와 사진 사이, 글과 간격은 사진과 글 사이 거리예요.";
@@ -1173,17 +1180,18 @@ function regions(W, H) {
       : { img: { x: W - iw, y, w: iw - p, h }, txt: { x: 0, y: 0, w: tw, h: H } };
   }
   if (S.lay === "band") {
-    const ih = Math.round(H * s), p = S.layPad;
+    // image height is a fixed pixel value, so it stays the same however long the text gets
+    const bh = Math.max(4, Math.round(S.layBandH)), p = S.layPad;
     const bw = W - p * 2, bx = p;
     // top/bottom paper edges both use the paper's vertical margin (padY) so they stay balanced; layPad is left/right only
     const v = S.padY;
     if (S.layBand === "top") {
-      const th = H - ih - S.layGap + S.padY;
-      return { img: { x: bx, y: v, w: bw, h: Math.max(4, ih - v) }, txt: { x: 0, y: H - th, w: W, h: th } };
+      const ty = v + bh + S.layGap - S.padY;
+      return { img: { x: bx, y: v, w: bw, h: bh }, txt: { x: 0, y: ty, w: W, h: H - ty } };
     }
     // image at the bottom: text, then image, then the credits block last of all
-    const bot = bandBottomReserve(), th = H - ih - (bot - v) - S.layGap + S.padY, mh = metaBlockH();
-    return { img: { x: bx, y: H - ih - (bot - v), w: bw, h: Math.max(4, ih - v) }, txt: { x: 0, y: 0, w: W, h: th },
+    const bot = bandBottomReserve(), iy = H - bot - bh, th = iy - S.layGap + S.padY, mh = metaBlockH();
+    return { img: { x: bx, y: iy, w: bw, h: bh }, txt: { x: 0, y: 0, w: W, h: th },
       metaTop: mh ? H - bot : null, nick: { x: W - 40, y: H - 34 } };
   }
   return { img: themeImg ? { x: 0, y: 0, w: W, h: H } : null, txt: { x: 0, y: 0, w: W, h: H } };
@@ -1191,8 +1199,8 @@ function regions(W, H) {
 function bandBottomReserve() { const mh = metaBlockH(); return mh ? mh + Math.max(0, S.padY - 24) : S.padY; }
 function needH(W) {
   const m = measure(W, S.size), n = m.contentH + S.padY * 2 + metaBlockH();
-  if (S.lay === "band" && S.layBand === "bottom") return (m.contentH + S.layGap + bandBottomReserve()) / (1 - layShare());
-  return S.lay === "band" ? (n + S.layGap - S.padY) / (1 - layShare()) : n;
+  if (S.lay === "band" && S.layBand === "bottom") return m.contentH + S.padY + S.layGap + S.layBandH + bandBottomReserve();
+  return S.lay === "band" ? n + S.layBandH + S.layGap : n;
 }
 function roundPath(x, y, w, h, r) {
   ctx.beginPath();
@@ -1236,9 +1244,15 @@ function fitPaperToImage() {
   const st = $("status"); st.className = "status";
   if (!themeImg) { st.textContent = "먼저 테마 이미지를 넣어 주세요."; return; }
   const W = S.paperW, ar = themeImg.height / themeImg.width, s = layShare(), p = S.layPad;
+  if (S.lay === "band") {
+    // band: fit the image box height to the picture; paper size is left alone
+    S.layBandH = Math.min(2400, Math.max(100, Math.round((W - p * 2) * ar)));
+    S.layZoom = 100; S.layX = 0; S.layY = 0; syncSliders(); update();
+    st.textContent = `사진 칸 세로 높이를 ${S.layBandH}px로 맞췄어요. 글이 넘치면 ‘글 길이에 맞게 용지 조절’을 눌러 주세요.`;
+    return;
+  }
   let H;
   if (S.lay === "side") H = (Math.round(W * s) - p) * ar + p * 2;
-  else if (S.lay === "band") H = ((W - p * 2) * ar + S.padY) / s;
   else H = W * ar;
   S.ratio = "custom"; S.paperH = Math.min(8000, Math.max(300, Math.round(H)));
   S.layZoom = 100; S.layX = 0; S.layY = 0; syncSliders();
